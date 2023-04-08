@@ -4,6 +4,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs'); //for convering password into secure password we have install theses pacckage
 const jwt = require('jsonwebtoken');
+const fetchUser = require('../middleware/fetchUser');
 
 const JWT_SECRET = "Tanmayisagoodboy";
 
@@ -79,7 +80,7 @@ router.post('/login',[ //these can be taken from express validator
       user:{
         id: user.id
       }
-      }
+    }
     const authtoken = jwt.sign(data, JWT_SECRET);
     res.json({authtoken})
 
@@ -87,6 +88,18 @@ router.post('/login',[ //these can be taken from express validator
     console.error(error.message);
     res.status(500).send("Internal server error");
   }
+})
+
+//ROUTE 3: Get loggedin user details using: POST "api/auth/getuser". login required.
+router.post('/getuser', fetchUser, async(req,res)=>{
+try {
+   userId = req.user.id;
+  const user = await User.findById(userId).select("-password");
+  res.send(user)
+} catch (error) {
+  console.error(error.message);
+  res.status(500).send("Internal server error");  
+}
 })
 
 module.exports = router 
